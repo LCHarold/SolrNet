@@ -149,7 +149,7 @@ namespace AutofacContrib.SolrNet
         ///   Registers a new core in the container.
         ///   This method is meant to be used after the facility initialization
         /// </summary>
-        private static void RegisterCore(SolrCore core, ContainerBuilder builder)
+        private static void RegisterCore(SolrCore core, ContainerBuilder builder, IHttpWebRequestFactory factory)
         {
             var coreConnectionId = core.Id + typeof(SolrConnection);
 
@@ -157,7 +157,8 @@ namespace AutofacContrib.SolrNet
                 .Named(coreConnectionId, typeof(ISolrConnection))
                 .WithParameters(new[] {
                     new NamedParameter("serverURL", core.Url)
-                });
+                })
+                .WithProperty("HttpWebRequestFactory", factory);
 
             var ISolrQueryExecuter = typeof(ISolrQueryExecuter<>).MakeGenericType(core.DocumentType);
             var SolrQueryExecuter = typeof(SolrQueryExecuter<>).MakeGenericType(core.DocumentType);
@@ -213,7 +214,7 @@ namespace AutofacContrib.SolrNet
             foreach (ISolrServer server in solrServers)
             {
                 var solrCore = GetCoreFrom(server);
-                RegisterCore(solrCore, builder);
+                RegisterCore(solrCore, builder, this.HttpWebRequestFactory);
             }
         }
 
